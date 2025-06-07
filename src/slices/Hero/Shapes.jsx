@@ -32,14 +32,15 @@ export function Shapes() {
         dpr={[1, 1.5]}
         camera={{ position: [0, 0, 25], fov: 30, near: 1, far: 40 }}
       >
-        <Suspense fallback={null}>
-          <Geometries mousePosition={mousePosition} />
+        <Suspense fallback={null}>          <Geometries mousePosition={mousePosition} />
           <ContactShadows
-            position={[0, -3.5, 0]}
+            position={[0, -4.5, 0]}
             opacity={0.65}
             scale={40}
-            blur={1}
+            blur={1.5}
             far={9}
+            resolution={256}
+            color="#000000"
           />
           <Environment preset="studio" />
         </Suspense>
@@ -48,57 +49,106 @@ export function Shapes() {
   );
 }
 
-function Geometries({ mousePosition }) {
-  const geometries = [
+function Geometries({ mousePosition }) {  const geometries = [
     {
-      position: [0, 0, 0],
-      r: 0.3,
-      geometry: new THREE.IcosahedronGeometry(3), // Gem
-    },
-    {
-      position: [1, -0.75, 4],
-      r: 0.4,
-      geometry: new THREE.CapsuleGeometry(0.5, 1.6, 2, 16), // Pill
-    },
-    {
-      position: [-1.4, 2, -4],
-      r: 0.6,
-      geometry: new THREE.DodecahedronGeometry(1.5), // Soccer ball
-    },
-    {
-      position: [-0.8, -0.75, 5],
+      position: [-1.5, -1, 2],
       r: 0.5,
-      geometry: new THREE.TorusGeometry(0.6, 0.25, 16, 32), // Donut
+      geometry: new THREE.TorusGeometry(1.0, 0.4, 20, 36), // Donut (in front, left)
     },
     {
-      position: [1.6, 1.6, -4],
-      r: 0.7,
-      geometry: new THREE.OctahedronGeometry(1.5), // Diamond
+      position: [1.5, -.8, 1.5],
+      r: 0.5,
+      geometry: new THREE.ConeGeometry(1.2, 2.0, 6), // Pyramid/cone (in front, right)
+    },
+    {
+      // Middle position - largest shape
+      position: [0, 0, -1],
+      r: 0.8,
+      geometry: new THREE.DodecahedronGeometry(2.5), // Soccer ball (middle - keeping this one)
+    },
+    {
+      position: [-1.7, 1.2, -1],
+      r: 0.6,
+      geometry: new THREE.TorusKnotGeometry(0.8, 0.2, 64, 16, 2, 3), // Knot (back, left)
+    },
+    {
+      position: [1.2, 1.7, -2],
+      r: 0.6,
+      geometry: new THREE.BoxGeometry(1.5, 1.5, 1.5), // Cube (back, right)
     },
   ];
-
   const soundEffects = [
+    new Audio("/sounds/hit1.ogg"),
     new Audio("/sounds/hit2.ogg"),
     new Audio("/sounds/hit3.ogg"),
     new Audio("/sounds/hit4.ogg"),
-  ];
-
-  const materials = [
+    new Audio("/sounds/hit6.ogg"),
+    new Audio("/sounds/hit7.ogg"),
+    new Audio("/sounds/hit8.ogg"),
+  ];  const materials = [
+    // Rainbow/Iridescent Material - keeping this one since it's cool
     new THREE.MeshNormalMaterial(),
-    new THREE.MeshStandardMaterial({ color: 0x2ecc71, roughness: 0 }),
-    new THREE.MeshStandardMaterial({ color: 0xf1c40f, roughness: 0.4 }),
-    new THREE.MeshStandardMaterial({ color: 0xe74c3c, roughness: 0.1 }),
-    new THREE.MeshStandardMaterial({ color: 0x8e44ad, roughness: 0.1 }),
-    new THREE.MeshStandardMaterial({ color: 0x1abc9c, roughness: 0.1 }),
-    new THREE.MeshStandardMaterial({
-      roughness: 0,
-      metalness: 0.5,
-      color: 0x2980b9,
+    // Neon/Candy like colors with enhanced glow effects
+    new THREE.MeshPhysicalMaterial({
+      roughness: 0.1,
+      metalness: 0.6,
+      color: 0x9c27b0, // Bright purple
+      clearcoat: 1.0,
+      clearcoatRoughness: 0.1,
+      emissive: 0x340137, // Subtle glow
+      emissiveIntensity: 2.5,
     }),
-    new THREE.MeshStandardMaterial({
-      color: 0x2c3e50,
+    new THREE.MeshPhysicalMaterial({
+      roughness: 0.05,
+      metalness: 0.9,
+      color: 0x00e5ff, // Cyan
+      clearcoat: 1.0,
+      clearcoatRoughness: 0.1,
+      emissive: 0x004d57, // Subtle glow
+      emissiveIntensity: 2.5,
+    }),
+    new THREE.MeshPhysicalMaterial({
+      color: 0xff4081, // Hot Pink
+      roughness: 0.1, // Fixed from 10 to 0.1
+      metalness: 0.4,
+      clearcoat: 0.8,
+      clearcoatRoughness: 0.1,
+      emissive: 0x4a0024, // Subtle glow
+      emissiveIntensity: 2.5,
+    }),
+    
+    // More neon colors with glow
+    new THREE.MeshPhysicalMaterial({
+      color: 0xffff00, // Neon yellow
+      roughness: 0.1,
+      metalness: 0.9,
+      clearcoat: 1.0,
+      clearcoatRoughness: 0.1,
+      emissive: 0x6b6b00, // Yellow glow
+      emissiveIntensity: 2.5,
+    }),    
+    // Candy-like translucent materials with glow
+    new THREE.MeshPhysicalMaterial({
+      color: 0xff00ff, // Magenta
+      roughness: 0.1,
+      metalness: 0.2,
+      clearcoat: 1.0,
+      clearcoatRoughness: 0.1,
+      transmission: 0.6, // More translucent
+      thickness: 1.0,
+      emissive: 0x550055, // Magenta glow
+      emissiveIntensity: 1.5,
+    }),
+    new THREE.MeshPhysicalMaterial({
+      color: 0x32CD32, // Lime green
       roughness: 0.1,
       metalness: 0.5,
+      clearcoat: 1.0,
+      clearcoatRoughness: 0.1,
+      transmission: 0.6, // More translucent
+      thickness: 1.0,
+      emissive: 0x2e4016, // Green glow
+      emissiveIntensity: 1.5,
     }),
   ];
 
@@ -158,7 +208,6 @@ function Geometry({ r, position, geometry, soundEffects, materials, mousePositio
   const handlePointerOut = () => {
     document.body.style.cursor = "default";
   };
-
   useEffect(() => {
     let ctx = gsap.context(() => {
       setVisible(true);
@@ -172,11 +221,15 @@ function Geometry({ r, position, geometry, soundEffects, materials, mousePositio
       });
     });
     return () => ctx.revert();
-  }, []);  // Apply subtle movement based on mouse position
+  }, []);
+  
+  
+  // Apply subtle movement based on mouse position
   useFrame(() => {
     if (groupRef.current && mousePosition) {
-      // Subtle movement based on mouse position
-      const movementFactor = 0.5; // Controls how much the shapes move
+      // Detect if this is the middle (largest) shape
+      const isMiddleShape = initialPosition.current[0] === 0 && initialPosition.current[1] === 0;
+      const movementFactor = isMiddleShape ? 0.8 : 0.5; // More movement for middle shape
       
       // Apply slight position offset based on mouse position
       const targetX = initialPosition.current[0] + mousePosition.x * movementFactor;
@@ -186,12 +239,12 @@ function Geometry({ r, position, geometry, soundEffects, materials, mousePositio
       groupRef.current.position.x = THREE.MathUtils.lerp(
         groupRef.current.position.x,
         targetX,
-        0.05
+        isMiddleShape ? 0.07 : 0.05 // Faster response for middle shape
       );
       groupRef.current.position.y = THREE.MathUtils.lerp(
         groupRef.current.position.y,
         targetY,
-        0.05
+        isMiddleShape ? 0.07 : 0.05
       );
     }
     
@@ -199,8 +252,7 @@ function Geometry({ r, position, geometry, soundEffects, materials, mousePositio
     if (meshRef.current && materialRef.current) {
       meshRef.current.material = materialRef.current;
     }
-  });
-  return (
+  });  return (
     <group position={position} ref={groupRef}>
       <Float speed={5 * r} rotationIntensity={6 * r} floatIntensity={5 * r} ref={floatRef}>
         <mesh
@@ -211,6 +263,7 @@ function Geometry({ r, position, geometry, soundEffects, materials, mousePositio
           visible={visible}
           material={materialRef.current}
           ref={meshRef}
+          renderOrder={-position[2]} // Ensure correct depth sorting
         ></mesh>
       </Float>
     </group>
