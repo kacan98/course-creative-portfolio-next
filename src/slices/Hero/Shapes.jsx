@@ -1,12 +1,28 @@
 "use client";
 
 import * as THREE from "three";
-import { Canvas } from "@react-three/fiber";
+import { Canvas, useFrame } from "@react-three/fiber";
 import { ContactShadows, Float, Environment } from "@react-three/drei";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 
 export function Shapes() {
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const handleMouseMove = (event) => {
+      // Normalize mouse position values between -1 and 1
+      const x = (event.clientX / window.innerWidth) * 2 - 1;
+      const y = -(event.clientY / window.innerHeight) * 2 + 1;
+      setMousePosition({ x, y });
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+    };
+  }, []);
+
   return (
     <div className="row-span-1 row-start-1 -mt-9 aspect-square  md:col-span-1 md:col-start-2 md:mt-0">
       <Canvas
@@ -17,7 +33,7 @@ export function Shapes() {
         camera={{ position: [0, 0, 25], fov: 30, near: 1, far: 40 }}
       >
         <Suspense fallback={null}>
-          <Geometries />
+          <Geometries mousePosition={mousePosition} />
           <ContactShadows
             position={[0, -3.5, 0]}
             opacity={0.65}
@@ -32,7 +48,7 @@ export function Shapes() {
   );
 }
 
-function Geometries() {
+function Geometries({ mousePosition }) {
   const geometries = [
     {
       position: [0, 0, 0],
@@ -94,16 +110,25 @@ function Geometries() {
       soundEffects={soundEffects}
       materials={materials}
       r={r}
+      mousePosition={mousePosition}
     />
   ));
 }
 
-function Geometry({ r, position, geometry, soundEffects, materials }) {
+function Geometry({ r, position, geometry, soundEffects, materials, mousePosition }) {
   const meshRef = useRef();
+  const groupRef = useRef();
   const [visible, setVisible] = useState(false);
+  const floatRef = useRef();
+  const materialRef = useRef();
+  const initialPosition = useRef([...position]); // Create a copy of the position array
 
-  const startingMaterial = getRandomMaterial();
-
+  // Initialize material only once
+  useEffect(() => {
+    if (!materialRef.current) {
+      materialRef.current = gsap.utils.random(materials);
+    }
+  }, [materials]);
   function getRandomMaterial() {
     return gsap.utils.random(materials);
   }
@@ -122,7 +147,8 @@ function Geometry({ r, position, geometry, soundEffects, materials }) {
       yoyo: true,
     });
 
-    mesh.material = getRandomMaterial();
+    // Only change material on click
+    materialRef.current = getRandomMaterial();
   }
 
   const handlePointerOver = () => {
@@ -146,18 +172,45 @@ function Geometry({ r, position, geometry, soundEffects, materials }) {
       });
     });
     return () => ctx.revert();
-  }, []);
-
+  }, []);  // Apply subtle movement based on mouse position
+  useFrame(() => {
+    if (groupRef.current && mousePosition) {
+      // Subtle movement based on mouse position
+      const movementFactor = 0.5; // Controls how much the shapes move
+      
+      // Apply slight position offset based on mouse position
+      const targetX = initialPosition.current[0] + mousePosition.x * movementFactor;
+      const targetY = initialPosition.current[1] + mousePosition.y * movementFactor;
+      
+      // Smooth lerping for more natural movement
+      groupRef.current.position.x = THREE.MathUtils.lerp(
+        groupRef.current.position.x,
+        targetX,
+        0.05
+      );
+      groupRef.current.position.y = THREE.MathUtils.lerp(
+        groupRef.current.position.y,
+        targetY,
+        0.05
+      );
+    }
+    
+    // Always update mesh material to the current materialRef value
+    if (meshRef.current && materialRef.current) {
+      meshRef.current.material = materialRef.current;
+    }
+  });
   return (
-    <group position={position} ref={meshRef}>
-      <Float speed={5 * r} rotationIntensity={6 * r} floatIntensity={5 * r}>
+    <group position={position} ref={groupRef}>
+      <Float speed={5 * r} rotationIntensity={6 * r} floatIntensity={5 * r} ref={floatRef}>
         <mesh
           geometry={geometry}
           onClick={handleClick}
           onPointerOver={handlePointerOver}
           onPointerOut={handlePointerOut}
           visible={visible}
-          material={startingMaterial}
+          material={materialRef.current}
+          ref={meshRef}
         ></mesh>
       </Float>
     </group>
