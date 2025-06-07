@@ -1,0 +1,31 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Run npm dev on start",
+      "type": "shell",
+      "command": "npm run dev",
+      "windows": {
+        "command": "npm run dev"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "runOptions": { "runOn": "folderOpen" }
+    },
+    {
+      "label": "run slicemachine",
+      "type": "shell",
+      "command": "npm run slicemachine",
+      "windows": {
+        "command": "npm run slicemachine"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "runOptions": { "runOn": "folderOpen" }
+    }
+  ]
+}
